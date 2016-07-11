@@ -10,11 +10,13 @@
 #' @export '%.%'
 #'
 '+.rcvirtual.random' <- function (l, r) {
+  op <- '+'
   if (missing(r)) { # this case occurs when the user writes " -x "
-    argl <- '0'
+    argl <- '-1'
     argr <- deparse(substitute(l))
     r <- l
-    l <- 0
+    l <- -1
+    op <- '*'
   } else {
     argl <- deparse(substitute(l))
     argr <- deparse(substitute(r))
@@ -54,22 +56,22 @@
           l <- matrix(nr = r$nr, nc = r$nc, l)
           argl <- paste0('matrix(nr = ', r$nr, ', nc = ', r$nc, ', ', l, ')')
         } else {
-          argr <- paste0('c(', paste(rep(l, szl), collapse = ', '), ')')
+          argl <- paste0('c(', paste(rep(l, szl), collapse = ', '), ')')
           l <- rep(l, szl)
         }
       } else { 
         stop('Incompatible dimensions.')
       }
     }
-    x$iset.operate(operation = '+', operand = l, operand.name = argl, 
+    x$iset.operate(operation = op, operand = l, operand.name = argl, 
                    operand.side = 'left', my.name = argr)	
   } else { #both arguments are rcvirtual.randoms
     if(l$size()[[1]] != r$size()[[1]]) stop('Incompatible dimensions.')
-    if(l$is.operation.allowed( operation='+', class(r) )) {
+    if(l$is.operation.allowed(operation='+', class(r))) {
       x <- l$copy(shallow = FALSE)
       x$iset.operate(operation = '+', operand = r, operand.name = argr, 
                      operand.side = 'right', my.name = argl)
-    } else if(r$is.operation.allowed( operation='+', class(l) )) {
+    } else if(r$is.operation.allowed(operation='+', class(l))) {
       x <- r$copy(shallow = FALSE)
       x$iset.operate(operation = '+', operand=l, operand.name = argl, 
                      operand.side = 'left' , my.name = argr)

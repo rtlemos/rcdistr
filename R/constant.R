@@ -124,21 +124,16 @@ Constant <- setRefClass(
       if (! .self$is.operation.allowed(operation, class(operand) )) {
         stop('Constant: Invalid operation')
       }
-      verbose = FALSE
-      if (verbose){
-        print(operation)
-        print(operand)
-        print(operand.name)
-        print(operand.side)
-        print(my.name)
-      }
+      #   print(operation)
+      #   print(operand)
+      #   print(operand.name)
+      #   print(operand.side)
+      #   print(my.name)
       if (is(operand, 'Constant')) {
         operand.value <- operand$iget.parameter(1)
         p1 <- paste0('(', operand.name,')$parameter(id = 1, eval = TRUE)')
       } else {
         operand.value <- operand
-        #RTL: with p1=operand.name, p1 keeps name of constant object
-        # another option is p1=operand, which doesn't work e.g. if p1 is a numeric vector
         p1 <- operand.name 
       }
       p2 <- paste0(my.name,'$parameter(id = 1, eval = TRUE)')
