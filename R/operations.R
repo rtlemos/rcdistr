@@ -13,13 +13,13 @@
   op <- '+'
   if (missing(r)) { # this case occurs when the user writes " -x "
     argl <- '-1'
-    argr <- deparse(substitute(l))
+    argr <- paste0('(', deparse(substitute(l)), ')')
     r <- l
     l <- -1
     op <- '*'
   } else {
-    argl <- deparse(substitute(l))
-    argr <- deparse(substitute(r))
+    argl <- paste0('(', deparse(substitute(l)), ')')
+    argr <- paste0('(', deparse(substitute(r)), ')')
   }
   if (!is(r, 'rcvirtual.random')){ 
     # right argument is a not a rcvirtual.random, 
@@ -66,6 +66,7 @@
     x$iset.operate(operation = op, operand = l, operand.name = argl, 
                    operand.side = 'left', my.name = argr)	
   } else { #both arguments are rcvirtual.randoms
+    #stop('RTL TODO sum of Normals is wrong, e.g. a=Normal(); b=Normal(); a+b')
     if(l$size()[[1]] != r$size()[[1]]) stop('Incompatible dimensions.')
     if(l$is.operation.allowed(operation='+', class(r))) {
       x <- l$copy(shallow = FALSE)
@@ -125,7 +126,7 @@
 #' @export 'exp.rcvirtual.random'
 #'
 'exp.rcvirtual.random' <- function(x){
-  arg <- deparse(substitute(x))
+  arg <- paste0('(', deparse(substitute(x)), ')')
   if (is(x,'Normal')){
     q <- LogNormal()
     q$param$mean$iset.dexpr(
@@ -147,7 +148,7 @@
 Log <- function(x){
   # for some unknown reason, deparse(substitute(x)) doesn't work if the function 
   # is called "log.rcvirtual.random" instead of "Log"
-  argx <- deparse(substitute(x)) #; print(argx)
+  argx <- paste0('(', deparse(substitute(x)), ')') #; print(argx)
   if (is(x,'Constant')){
     q <- Constant(log(x$parameter(id = 1, eval = TRUE)))
     q$iset.dexpr(1, paste0('log((',argx,')$parameter(id = 1, eval = TRUE))'))

@@ -32,14 +32,14 @@ Normal <- setRefClass(
       .self$dexpr <- list(mean = NULL, variance = NULL)
       if(is(mean, 'rcvirtual.random')){
         .self$param[[1]] <- mean
-        .self$dexpr[[1]] <- deparse(substitute(mean))
+        .self$dexpr[[1]] <- paste0('(', deparse(substitute(mean)), ')')
       } else {
         .self$param[[1]] <- Constant(mean)
         .self$dexpr[[1]] <- ".self$param$mean"
       }
       if(is(variance, 'rcvirtual.random')){
         .self$param[[2]] <- variance
-        .self$dexpr[[2]] <- deparse(substitute(variance))
+        .self$dexpr[[2]] <- paste0('(', deparse(substitute(variance)), ')')
         szv <- variance$size()
         if (szv$nr != sz$nr | szv$nc != sz$nr) stop('Variance has wrong size')
       } else {
@@ -297,13 +297,74 @@ Normal <- setRefClass(
       }
     },
     
+    given = function(variable, value, permanent = FALSE) {
+      "If permanent = FALSE, returns a new variable conditioned on a fixed value
+      of one of the its dependencies. If permanent = TRUE, modifies the current
+      variable (i.e., .self) permanently."
+      
+      var.name <- deparse(substitute(variable))
+      q <- callSuper(variable, value, permanent = permanent)
+      vname <- paste0('(', var.name, ')')
+      if (!permanent) {
+        q$param$mean <- q$param$mean$copy(shallow = FALSE)
+        q$param$variance <- q$param$variance$copy(shallow = FALSE)
+      }
+      q$param$mean$dexpr <- lapply(q$param$mean$dexpr, FUN = function(dexpr) {
+        as.character(mapply(dexpr, value, FUN = function(myexpr, myvalue) {
+          w <- myexpr
+          w <- gsub(
+            pattern = paste0(vname, 
+                             '$param$mean$parameter(id = 1, eval = TRUE)'),
+            replacement = myvalue, x = w, fixed = TRUE)
+          w <- gsub(pattern = vname,
+                    replacement = myvalue, x = w, fixed = TRUE)
+          w <- gsub(pattern = paste0(' ', var.name, ' '),
+                    replacement = paste0(' ', myvalue, ' '),
+                    x = w, fixed = TRUE)
+          w <- gsub(pattern = paste0('(', var.name, ' '),
+                    replacement = paste0('(', myvalue, ' '),
+                    x = w, fixed = TRUE)
+          w <- gsub(pattern = paste0(' ', var.name, ')'),
+                    replacement = paste0(' ', myvalue, ')'),
+                    x = w, fixed = TRUE)
+        }))
+      })
+      q$param$variance$dexpr <- lapply(q$param$variance$dexpr, FUN = function(dexpr) {
+        as.character(mapply(dexpr, FUN = function(myexpr) {
+          w <- myexpr
+          w <- gsub(
+            pattern = paste0(vname, 
+                             '$param$variance$parameter(id = 1, eval = TRUE)'),
+            replacement = 0, x = w, fixed = TRUE)
+          w <- gsub(pattern = vname,
+                    replacement = 0, x = w, fixed = TRUE)
+          w <- gsub(pattern = paste0(' ', var.name, ' '),
+                    replacement = paste0(' ', 0, ' '),
+                    x = w, fixed = TRUE)
+          w <- gsub(pattern = paste0('(', var.name, ' '),
+                    replacement = paste0('(', 0, ' '),
+                    x = w, fixed = TRUE)
+          w <- gsub(pattern = paste0(' ', var.name, ')'),
+                    replacement = paste0(' ', 0, ')'),
+                    x = w, fixed = TRUE)
+        }))
+      })
+      return(q)
+    },
+    
+    # --------------------------------------------------------------------------
+    # 'Private methods' --------------------------------------------------------
+    # --------------------------------------------------------------------------
+    
     iget.optimization.parameters = function(){
       return(list(mean=.self$param$mean$iget.parameter(1),
                   sd=sqrt(.self$param$variance$iget.parameter(1))))
     },
     
     iset.operate = function(operation, operand, operand.name, operand.side, my.name){
-      if(! .self$is.operation.allowed(operation, class(operand) )) stop('Normal: Invalid operation')
+      if(! .self$is.operation.allowed(operation, class(operand) )) {
+        stop('Normal: Invalid operation')
+      }
       mu    <- .self$param$mean$copy(shallow = FALSE)
       tau   <- .self$param$variance$copy(shallow = FALSE)
       munm  <- paste0(my.name,'$param$mean')

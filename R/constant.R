@@ -26,7 +26,7 @@ Constant <- setRefClass(
         stop('Invalid value.')
       }
       if(is(value,'Constant')){
-        .self$dexpr <- list(value = deparse(substitute(value)))
+        .self$dexpr <- list(value = paste0('(', deparse(substitute(value)), ')'))
       } else {
         .self$dexpr <- list(value = as.character(value))
       }
@@ -131,7 +131,7 @@ Constant <- setRefClass(
       #   print(my.name)
       if (is(operand, 'Constant')) {
         operand.value <- operand$iget.parameter(1)
-        p1 <- paste0('(', operand.name,')$parameter(id = 1, eval = TRUE)')
+        p1 <- paste0(operand.name,'$parameter(id = 1, eval = TRUE)')
       } else {
         operand.value <- operand
         p1 <- operand.name 
