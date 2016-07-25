@@ -180,3 +180,39 @@ as.Continuous <- function(x, npoints = 9, logtol = -8) {
     stop('Input is not of Random Abstract Type.')
   }
 }
+
+#' Temporarily fixing a random variable at a constant (e.g., an observation),
+#' or a Constant at a different value
+#'
+#' @param l, a random variable or Constant (class rcvirtual.random)
+#' @param r, a numeric, matrix, or Constant 
+#' @return x, a Constant
+#'
+#' @export '%=%'
+#'
+'%=%' <- function (l, r) {
+  stopifnot(is(l, 'rcvirtual.random'))
+  if (is(r, 'Constant')) r <- r$param$value
+  stopifnot(is.numeric(r) | is.matrix(r))
+  if (is.matrix(r)) {
+    stopifnot(l$nr == nrow(r) & l$nc == ncol(r))
+  } else {
+    stopifnot(l$nc == 1 & l$nr == length(r))
+  }
+  x <- Constant(r)
+  return(x)
+}
+
+#' Conditional distributions
+#'
+#' @param l 
+#' @param r 
+#'
+#' @export '%|%'
+#'
+'%|%' <- function (l, r) {
+ name.l <- deparse(substitute(l)) 
+ name.r <- deparse(substitute(r)) 
+ print(name.l)
+ print(name.r)
+}

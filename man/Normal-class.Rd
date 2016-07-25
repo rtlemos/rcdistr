@@ -13,6 +13,10 @@ Normal random variable
 \describe{
 \item{\code{cdf(x = NULL, lower.tail = TRUE, log.p = FALSE, verbose = FALSE, ...)}}{Computes the Normal cdf(x)}
 
+\item{\code{given(variable, value, permanent = FALSE)}}{If permanent = FALSE, returns a new variable conditioned on a fixed value
+of one of the its dependencies. If permanent = TRUE, modifies the current
+variable (i.e., .self) permanently.}
+
 \item{\code{iget.optimization.parameters()}}{This function should be replaced with another
 that does not return NULL, when auxiliary
 parameters exist.}
