@@ -211,8 +211,38 @@ as.Continuous <- function(x, npoints = 9, logtol = -8) {
 #' @export '%|%'
 #'
 '%|%' <- function (l, r) {
- name.l <- deparse(substitute(l)) 
- name.r <- deparse(substitute(r)) 
- print(name.l)
- print(name.r)
+  stopifnot(is.list(l) | is(l, 'rcvirtual.random'))
+  stopifnot(is.list(r) | is(r, 'Constant'))
+  if (is.list(l)) stopifnot(all(mapply(l, FUN = function(x) {
+    is(x, 'rcvirtual.random')
+  })))
+  if (is.list(r)) stopifnot(all(mapply(r, FUN = function(x) {
+    is(x, 'Constant')
+  })))
+  if (!is.list(l)) {
+    l.name <- deparse(substitute(l))
+  } else {
+    if (!is.null(names(l))) {
+      l.name <- names(l)
+    } else {
+      l.str <- deparse(substitute(l))
+      post.leftpar <- strsplit(l.str, '(', fixed = TRUE)[[1]][2]
+      pre.rightpar <- strsplit(post.leftpar, ')', fixed = TRUE)[[1]][1]
+      nospace <- gsub(" ", "", pre.rightpar, fixed = TRUE)
+      l.name <- strsplit(nospace, ',')[[1]]
+    }
+  }
+  r.str <- gsub(' ', '', deparse(substitute(r)), fixed = TRUE)
+  if (grepl('(', r.str, fixed = TRUE)) {
+    r.str <- substring(r.str, 
+                       regexpr(pattern = '(', text = r.str, fixed = TRUE) + 1, 
+                       nchar(r.str))
+    r.mult <- strsplit(r.str, ',', fixed = TRUE)[[1]]
+    r.name <- as.character(mapply(r.mult, FUN = function(x) {
+      substring(x, first = 1, last = regexpr('%=%', x, fixed = TRUE) - 1)
+    }))
+  } else {
+    r.name <- r.str
+  }
+  return(list(l.name = l.name, r.name = r.name))
 }
